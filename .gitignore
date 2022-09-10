@@ -1,2 +1,13 @@
+# dev(d)
 /vendor
-/logs
+/logs/*
+!/logs/README
+
+# yarn
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
