@@ -1,8 +1,8 @@
 #!/bin/bash
 
-rm -rf ./vendor/python3
-mkdir ./vendor/python3
-virtualenv ./vendor/python3
-rm ./vendor/python3/.gitignore
-. ./vendor/python3/bin/activate
+rm -rf vendor/python3
+mkdir vendor/python3
+virtualenv vendor/python3
+rm vendor/python3/.gitignore
+. vendor/python3/bin/activate
 pip install -r requirements.txt

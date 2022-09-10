@@ -1,12 +1,12 @@
 #!/bin/bash
 
-rm -rf ./vendor/nvm
-mkdir ./vendor/nvm
-wget -q https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh -O ./vendor/nvm/_install.sh
-chmod +x ./vendor/nvm/_install.sh
+rm -rf vendor/nvm
+mkdir vendor/nvm
+wget -q https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh -O vendor/nvm/_install.sh
+chmod +x vendor/nvm/_install.sh
 
-NVM_DIR=./vendor/nvm PROFILE=/dev/null ./vendor/nvm/_install.sh
-NVM_DIR=./vendor/nvm PROFILE=/dev/null . ./vendor/nvm/nvm.sh
-NVM_DIR=./vendor/nvm nvm install
+NVM_DIR=vendor/nvm PROFILE=/dev/null vendor/nvm/_install.sh
+NVM_DIR=vendor/nvm PROFILE=/dev/null . vendor/nvm/nvm.sh
+NVM_DIR=vendor/nvm nvm install
 
-rm ./vendor/nvm/_install.sh
+rm vendor/nvm/_install.sh

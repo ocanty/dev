@@ -1,5 +1,5 @@
 #!/bin/bash
-rm -rf ./vendor/go
-mkdir ./vendor/go
-wget https://go.dev/dl/go1.19.linux-amd64.tar.gz -O ./vendor/go/go.tar.gz
-tar -xsvf ./vendor/go/go.tar.gz -C ./vendor/
+rm -rf vendor/go
+mkdir vendor/go
+wget https://go.dev/dl/go1.19.linux-amd64.tar.gz -O vendor/go/go.tar.gz
+tar -xsvf vendor/go/go.tar.gz -C vendor/

@@ -1,4 +1,4 @@
 #!/bin/bash
 
-find ./vendor/ -type f -name .gitignore -exec rm  {} \;
-find ./vendor/ -type d -name ".git" -exec rm -rf "{}" \;
+find vendor/ -type f -name .gitignore -exec rm  {} \;
+find vendor/ -type d -name ".git" -exec rm -rf "{}" \;
