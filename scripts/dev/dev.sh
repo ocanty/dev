@@ -7,11 +7,11 @@ if [ -z ${DEV_ROOT+x} ]; then
 fi
 
 SESSION="dev"
-TMUX="${DEV_ROOT}/vendor/tmux/tmux -L dev-srv -f ${DEV_ROOT}/scripts/dev/tmux.conf"
+TMUX="${DEV_ROOT}/vendor/tmux/tmux -L dev -f ${DEV_ROOT}/scripts/dev/tmux.conf"
 
 start() {
     echo "Starting dev, please wait..."
-    [ -d "./vendor" ] || vendor
+    [ -d "vendor" ] || vendor
 
     $TMUX has-session -t $SESSION 2>/dev/null
     if [ $? == 0 ]; then
@@ -32,7 +32,7 @@ start_devd() {
     window=100
     $TMUX new-window -t $SESSION:$window 
     $TMUX rename-window -t $SESSION:$window 'devd'
-    $TMUX send-keys -t $SESSION:$window "while true; do ${DEV_ROOT}/scripts/dev/devd.py monitor; sleep 1; done" C-m 
+    $TMUX send-keys -t $SESSION:$window "while true; do ${DEV_ROOT}/scripts/devd/devd.py monitor; sleep 1; done" C-m 
     # $TMUX send-keys -t $SESSION:$window "${DEV_ROOT}/dev stop" C-m
 }
 
@@ -71,7 +71,7 @@ stop() {
 }
 
 vendor() {
-    cd $DEV_ROOT && run-parts ./scripts/vendor
+    cd $DEV_ROOT && run-parts scripts/vendor
     commit_vendored
 }
 
@@ -87,7 +87,7 @@ commit_vendored() {
 }
 
 node_modules() {
-    cd $DEV_ROOT && ./scripts/vendor/02-node_modules
+    cd $DEV_ROOT && scripts/vendor/02-node_modules
     commit_vendored
 }
 

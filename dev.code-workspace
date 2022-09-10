@@ -5,8 +5,8 @@
 		}
 	],
 	"settings": {
-		"python.defaultInterpreterPath": "./vendor/python3/bin/python",
-		"python.linting.pylintPath": "./vendor/python3/bin/pylint",
+		"python.defaultInterpreterPath": "vendor/python3/bin/python",
+		"python.linting.pylintPath": "vendor/python3/bin/pylint",
 		"editor.formatOnSave": true,
 		"editor.codeActionsOnSave": {
 			"source.fixAll": true,
