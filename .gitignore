@@ -1,7 +1,7 @@
 # dev(d)
 /vendor
 /logs/*
-!/logs/README
+!/logs/README.md
 
 # yarn
 .pnp.*
