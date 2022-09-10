@@ -1,0 +1,3 @@
+#!/bin/bash
+export DEV_ROOT=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+. "$DEV_ROOT/scripts/dev/dev.sh"

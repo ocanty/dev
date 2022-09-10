@@ -1,0 +1,7 @@
+services:
+  fyp2-ui:
+    workdir: projects/fyp2-ui
+    command: yarn run start
+  modelgen:
+    workdir: projects/modelgen
+    command: yarn run watch

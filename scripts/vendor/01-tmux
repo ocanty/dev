@@ -1,0 +1,7 @@
+#!/bin/bash
+
+rm -rf ./vendor/tmux
+mkdir ./vendor/tmux
+wget https://github.com/mjakob-gh/build-static-tmux/releases/download/v3.3/tmux.linux-amd64.gz -O ./vendor/tmux/tmux.gz
+gzip -d ./vendor/tmux/tmux.gz
+chmod +x ./vendor/tmux/tmux
