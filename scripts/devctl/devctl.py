@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""devd(aemon)"""
+"""devctl(aemon)"""
 
 import os
 import random
@@ -25,7 +25,7 @@ def main():
 
     args = sys.argv[1:]
     args.reverse()
-    Devd(Path(os.getenv("DEV_ROOT"))).command(args)
+    DevCtl(Path(os.getenv("DEV_ROOT"))).command(args)
 
 
 class Command(BaseModel):
@@ -38,15 +38,26 @@ class Container(BaseModel):
     """container"""
 
 
-class Project(BaseModel):
+class Service(BaseModel):
     """service definition"""
     command: Optional[Command]
     container: Optional[Container]
 
 
-class DevdConfig(BaseModel):
-    """devd config"""
-    services: Dict[str, Project]
+class Scope(BaseModel):
+    """Project with services"""
+    services: List[str]
+
+
+class Startup(BaseModel):
+    groups: List[str]
+
+
+class DevCtlConfig(BaseModel):
+    """devctl config"""
+    services: Dict[str, Service]
+    groups: Dict[str, Scope]
+    startup: Startup
 
 
 def hash_str_deterministic(string: str, low_range: int, high_range: int) -> int:
@@ -81,17 +92,17 @@ def rmdir(directory: Path):
     directory.rmdir()
 
 
-class Devd:
-    """Devd"""
+class DevCtl:
+    """DevCtl"""
 
     server: libtmux.Server
     session: libtmux.Session
-    config: DevdConfig
+    config: DevCtlConfig
     root: Path
     logs: Path
 
     def __init__(self, root: Path):
-        self.server = libtmux.Server("dev")
+        self.server = libtmux.Server("devenv")
         self.root = root
         self.logs = self.root.joinpath("logs")
 
@@ -100,15 +111,17 @@ class Devd:
             raise Exception("cannot find dev session")
 
         self.session = session
-        self.config = DevdConfig.parse_obj(
-            yaml.safe_load(self.root.joinpath("devd-config.yml").read_bytes()))
+        self.config = DevCtlConfig.parse_obj(
+            yaml.safe_load(self.root.joinpath("devctl-config.yml").read_bytes()))
 
     def command(self, args: List[str]):
         """root command handler"""
 
         cmds = {
-            "start-services": self.command_start_services,
-            "stop-services": self.command_stop_services,
+            "start-groups": self.command_start_groups,
+            "stop-groups": self.command_stop_groups,
+            "start": self.command_start_services,
+            "stop": self.command_stop_services,
             "monitor": self.command_monitor,
             "tailor": self._restart_tailor,
             "cmd": self.command_cmd,
@@ -123,6 +136,30 @@ class Devd:
             raise Exception(f"no such command {cmd}")
 
         cmds[cmd](args)
+
+    def command_start_groups(self, args: List[str]):
+        """start groups"""
+        while len(args) > 0:
+            scope = args.pop()
+
+            if scope in self.config.groups:
+                self._log(f"starting scope: {scope}")
+                services = self.config.groups[scope].services
+                self._start_services(services)
+            else:
+                self._log(f"no such scope: {scope}")
+
+    def command_stop_groups(self, args: List[str]):
+        """stop groups"""
+        while len(args) > 0:
+            scope = args.pop()
+
+            if scope in self.config.groups:
+                self._log(f"stopping scope: {scope}")
+                services = self.config.groups[scope].services
+                self._stop_services(services)
+            else:
+                self._log(f"no such scope: {scope}")
 
     def command_start_services(self, args: List[str]):
         """starts services"""
@@ -142,6 +179,8 @@ class Devd:
 
         self._setup_logfiles()
         self._restart_tailor()
+
+        self._startup_tasks()
 
         while True:
             time.sleep(5)
@@ -172,11 +211,11 @@ class Devd:
         win.rename_window(self._service_window_name(service, status))
 
         if status == "failed":
-            self._log(f"{service} failed, restarting in 2 seconds...")
-            time.sleep(2)
+            self._log(f"{service} failed, restarting in 10 seconds...")
+            time.sleep(10)
             self._start_services([service], True)
         elif status == "success":
-            input(f"[devd] {service} exited successfully.")
+            input(f"[devctl] {service} exited successfully.")
         # ignore "running" for now.
         else:
             raise Exception(
@@ -188,11 +227,11 @@ class Devd:
         for svc_id in self.config.services:
             self._service_logfile(svc_id).touch()
 
-        self._service_logfile("devd").touch()
+        self._service_logfile("devctl").touch()
 
     def _log(self, msg):
-        print(f"[devd] {msg}")
-        with open(self.logs.joinpath("devd"), "a", encoding='utf-8') as log:
+        print(f"[devctl] {msg}")
+        with open(self.logs.joinpath("devctl"), "a", encoding='utf-8') as log:
             log.write(msg+"\n")
 
     def _service_logfile(self, svc_id: str) -> Path:
@@ -213,8 +252,8 @@ class Devd:
             else:
                 return
 
-        command = f"{self.root}/scripts/dev/shell.sh -c {shlex.quote(cmd + ';')}"
-        self._log("new cmd window: " + command)
+        command = f"{self.root}/scripts/devenv/shell.sh -c {shlex.quote(cmd + ';')}"
+        # self._log("new cmd window: " + command)
 
         self.session.new_window(
             name,
@@ -282,7 +321,7 @@ class Devd:
 
             self._cmd_window(
                 self._service_window_name(service),
-                f"cd {command.workdir} && ((({command.cmd}) && $DEV_ROOT/devd notify-service-status {service} success) || $DEV_ROOT/devd notify-service-status {service} failed;)",
+                f"cd {command.workdir} && ((({command.cmd}) && $DEV_ROOT/devctl notify-service-status {service} success) || $DEV_ROOT/devctl notify-service-status {service} failed;)",
                 restart
             )
 
@@ -322,11 +361,14 @@ class Devd:
             return f"svc-failed-{service}"
 
     def _restart_tailor(self):
-        self._log("(re)starting tailor")
+        self._log("(re)starting logs")
         self._cmd_window(
-            "devd-tailor",
-            "scripts/devd/tailor.sh"
+            "devctl-logs",
+            "scripts/devctl/tailor.sh"
         )
+
+    def _startup_tasks(self):
+        self.command_start_groups(self.config.startup.groups)
 
 
 if __name__ == "__main__":

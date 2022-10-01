@@ -1,0 +1,47 @@
+startup:
+  groups:
+    - default
+services:
+  glue:
+    command:
+      workdir: dev/glue
+      cmd: yarn run dev
+  glued:
+    command:
+      workdir: dev/glued
+      cmd: yarn run dev
+  glueddb:
+    command:
+      workdir: dev/glueddb
+      cmd: yarn run dev
+  glueddbpostgres:
+    command:
+      workdir: dev/glueddb
+      cmd: docker-compose rm -f && docker-compose up
+  gluedrpcclient:
+    command:
+      workdir: dev/gluedrpcclient
+      cmd: yarn run dev
+  gluedrpcserver:
+    command:
+      workdir: dev/gluedrpcserver
+      cmd: yarn run dev
+  gluedui:
+    command:
+      workdir: dev/gluedui
+      cmd: yarn run start
+  sbox:
+    commandi:
+      workdir: dev/sbox
+      cmd: yarn run dev
+groups:
+  default:
+    services:
+      - glue
+      - glued
+      - gluedrpcserver
+      - gluedrpcclient
+      - glueddb
+      - glueddbpostgres
+      - gluedui
+      - sbox

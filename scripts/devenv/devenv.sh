@@ -2,51 +2,51 @@
 
 if [ -z ${DEV_ROOT+x} ]; then
     echo "DEV_ROOT environ variable is unset."
-    echo "Do not run this script directly, run dev from the repository root."
+    echo "Do not run this script directly, run devenv from the repository root."
     exit 1
 fi
 
 SESSION="dev"
-TMUX="${DEV_ROOT}/vendor/tmux/tmux -L dev -f ${DEV_ROOT}/scripts/dev/tmux.conf"
+TMUX="${DEV_ROOT}/vendor/tmux/tmux -L devenv -f ${DEV_ROOT}/scripts/devenv/tmux.conf"
 
 start() {
-    echo "Starting dev, please wait..."
+    echo "Starting devenv, please wait..."
     [ -d "vendor" ] || vendor
 
     $TMUX has-session -t $SESSION 2>/dev/null
     if [ $? == 0 ]; then
-        echo "dev already running, attaching..."
+        echo "devenv already running, attaching..."
         $TMUX attach-session -t $SESSION
         exit 
     fi
 
-    $TMUX new-session -A -d -s $SESSION "${DEV_ROOT}/scripts/dev/shell.sh"
-    $TMUX set-option -t $SESSION default-shell "${DEV_ROOT}/scripts/dev/shell.sh"
+    $TMUX new-session -A -d -s $SESSION "${DEV_ROOT}/scripts/devenv/shell.sh"
+    $TMUX set-option -t $SESSION default-shell "${DEV_ROOT}/scripts/devenv/shell.sh"
 
-    start_devd
+    start_devctl
 
     $TMUX attach-session -t $SESSION
 }
 
-start_devd() {
+start_devctl() {
     window=100
     $TMUX new-window -t $SESSION:$window 
-    $TMUX rename-window -t $SESSION:$window 'devd'
-    $TMUX send-keys -t $SESSION:$window "while true; do ${DEV_ROOT}/scripts/devd/devd.py monitor; sleep 1; done" C-m 
+    $TMUX rename-window -t $SESSION:$window 'devctl'
+    $TMUX send-keys -t $SESSION:$window "while true; do ${DEV_ROOT}/scripts/devctl/devctl.py monitor; sleep 1; done" C-m 
     # $TMUX send-keys -t $SESSION:$window "${DEV_ROOT}/dev stop" C-m
 }
 
 start_code() {
     if [[ ! -v VSCODE_GIT_IPC_HANDLE ]]; then
-        echo "[dev] starting vscode"
-        echo "[dev] checking if vscode extensions are installed"
+        echo "[devenv] starting vscode"
+        echo "[devenv] checking if vscode extensions are installed"
         jq -r '.recommendations[]' "${DEV_ROOT}/.vscode/extensions.json" \
             | xargs -i -- sh -c "code --install-extension {} || true"    \
             | awk '!/is already installed/ && !/Installing extensions/'  \
 
         code $DEV_ROOT
     else
-        echo "[dev] vscode is already open"
+        echo "[devenv] vscode is already open"
         exit 0
     fi 
 }
@@ -77,7 +77,7 @@ vendor() {
 
 commit_vendored() {
     echo
-    read -p "[dev] Commit vendored dependencies (y/n)? " -n 1 -r
+    read -p "[devenv] Commit vendored dependencies (y/n)? " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]
     then
@@ -103,8 +103,8 @@ do
             start
             ;;
 
-        devd)
-            start_devd
+        devctl)
+            start_devctl
             ;;
 
         code)

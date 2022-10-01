@@ -1,4 +1,9 @@
 
+# Enable env for dev if not done
+if [ -z ${DEV_ENV_DONE+x} ]; then
+    . $DEV_ROOT/scripts/devenv/env.sh
+fi
+
 # If not running interactively, don't do anything
 case $- in
     *i*) ;;
@@ -139,5 +144,4 @@ __bash_prompt() {
 export PROMPT_DIRTRIM=4
 export PROMPT_COMMAND='history -a'
 
-. $DEV_ROOT/scripts/dev/env.sh
 __bash_prompt
