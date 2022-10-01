@@ -1,0 +1,25 @@
+{
+  "name": "@dev/glued",
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "private": true,
+  "license": "MIT",
+  "files": [
+    "dist/**"
+  ],
+  "scripts": {
+    "build": "npx tsup index.ts --format esm,cjs --dts --external react",
+    "dev": "npx tsup index.ts --format esm,cjs --watch --dts --external react --onSuccess 'node dist/index.js'",
+    "lint": "TIMING=1 eslint \"src/**/*.{ts,tsx,js,jsx}\" --fix",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+  },
+  "devDependencies": {
+    "@types/node": "^18.7.13"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

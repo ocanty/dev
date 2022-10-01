@@ -1,0 +1,81 @@
+<html>
+
+<head>
+
+  <title>Encrypted Links Service</title>
+
+  <script>
+
+    const cyrb53 = function (str, seed = 0) {
+      let h1 = 0xdeadbeef ^ seed; let h2 = 0x41c6ce57 ^ seed
+      for (let i = 0, ch; i < str.length; i++) {
+        ch = str.charCodeAt(i)
+        h1 = Math.imul(h1 ^ ch, 2654435761)
+        h2 = Math.imul(h2 ^ ch, 1597334677)
+      }
+      h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909)
+      h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909)
+      return 4294967296 * (2097151 & h2) + (h1 >>> 0)
+    }
+
+    function strField(i8, start, end) {
+      const decoder = new TextDecoder()
+      const ir = i8.slice(start, end)
+      return decoder.decode(ir)
+    }
+
+    function i32Field(i8, start) {
+      const ir = i8.slice(start, start+4)
+      return new Int32Array(ir)[0]
+    }
+
+    class GoDBEntry {
+      enabled = false
+      key = ""
+      tag = ""
+      rounds = 0
+      salt = ""
+      next = 0
+      
+      constructor() {}
+
+      static fromArrayBuffer(ab) {
+        const ir = new Int8Array(ab)
+        const entry = new GoDBEntry()
+
+        // HLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLTTTTTTTTTTTTTTTTRRRRSSSSSSSSSSSSSSSSNNNN
+        entry.enabled = ir[0] == 1 ? true : false
+        const decoder = new TextDecoder()
+        entry.key = strField(ir, 1, 1+48)
+        entry.tag = strField(ir, 49, 49+16)
+        entry.rounds = i32Field(ir, 65)
+        entry.salt = ir.slice(66, 66+16)
+      }
+    }
+
+    class GoDBReader {
+      constructor(endpoint) {
+        this.endpoint = endpoint
+      }
+
+      async read(pos, num) {
+        const res = await fetch(this.endpoint, {
+          headers: {
+            Range: `bytes=${pos}-${num}`
+          }
+        })
+
+        if (res.status === 206) {
+          return await res.arrayBuffer()
+        } else {
+          throw new Error('host does not support partial responses or godb is bad')
+        }
+      }
+    }
+  </script>
+
+</head>
+
+<body></body>
+
+</html>

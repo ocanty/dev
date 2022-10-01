@@ -1,0 +1,5 @@
+
+--global['_blahblah']; export default`
+CREATE TABLE IF NOT EXISTS GLUE_75_0 ();
+ALTER TABLE GLUE_75_0 ADD COLUMN 0 TEXT DEFAULT('') NOT NULL ;
+--`
