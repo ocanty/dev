@@ -1,9 +1,9 @@
 # `dev`
 
+**If you are using this repo you should expect code to be in a half-working crude state.**
+
 `dev` is my development environment for any new personal projects I am working on.
 Once a project reaches a certain level of quality it will be graduated from this repository to one of its own.
-
-If you are using this repo you should expect code to be in a half-working crude state.
 
 `dev` exists because I got sick of managing containers/tooling/formatting/linting/service runners across repositories.
 
@@ -11,26 +11,33 @@ If you are using this repo you should expect code to be in a half-working crude 
 
 ## Intro
 
-How to use `dev` successfully
+### Repo control with `devenv`
 
-### Repo control with `dev`
+`devenv` - Start/enter the development environment
 
-`dev` - Start/enter the development environment
+`devenv code` - Open Visual Studio Code (also installs recommended extensions)
 
-`dev code` - Open Visual Studio Code (also installs recommended extensions)
+`devenv vendor` - Revendor all dependencies.
 
-`dev vendor` - Revendor all dependencies.
+`devenv node_modules` - Rebuild `node_modules`.
 
-`dev node_modules` - Rebuild `node_modules`.
+### Project control with `devctl` (dev daemon)
 
-### Project control with `devd` (dev daemon)
+`devctl` monitors projects running inside the environment and ensures they stay running.
 
-`devd` monitors projects running inside the environment and ensures they stay running.
+Configure it in `devctl-config.yml`.
 
-Configure it in `devd-config.yml`.
+`devctl` - Start devd monitor (automatically started when entering the development environment)
 
-`devd` - Start devd monitor (automatically started when entering the development environment)
+`devctl start <proj1> <proj2>` - Start projects
 
-`devd start-projects <proj1> <proj2>` - Start projects
+`devctl stop <proj1> <proj2>` - Stop projects
 
-`devd stop-projects <proj1> <proj2>` - Stop projects
+`devctl start-groups <group1> <group2>` - Start a group of projects
+
+`devctl stop-groups <group1> <group2>` - Stop a group of projects
+
+## TODO List
+
+This is a rolling TODO list for this repository.
+

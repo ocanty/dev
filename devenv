@@ -1,0 +1,3 @@
+#!/bin/bash
+export DEV_ROOT=$(git rev-parse --show-toplevel)
+. "$DEV_ROOT/scripts/devenv/devenv.sh"

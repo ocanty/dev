@@ -1,9 +1,0 @@
-#!/bin/bash
-
-if [ -z ${DEV_ROOT+x} ]; then
-    echo "DEV_ROOT environ variable is unset."
-    echo "You must be in dev to run this command."
-    exit 1
-fi
-
-$DEV_ROOT/scripts/devd/devd.py "$@"

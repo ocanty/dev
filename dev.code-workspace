@@ -7,11 +7,19 @@
 	"settings": {
 		"python.defaultInterpreterPath": "vendor/python3/bin/python",
 		"python.linting.pylintPath": "vendor/python3/bin/pylint",
-		"editor.formatOnSave": true,
+		"editor.formatOnSave": false,
 		"editor.codeActionsOnSave": {
 			"source.fixAll": true,
 			"source.organizeImports": true,
 			"source.sortMembers": true
+		},
+		"terminal.integrated.profiles.linux": {
+			"devctl": {
+				"path": "devctl",
+				"args": [
+					"term"
+				]
+			}
 		}
 	}
 }

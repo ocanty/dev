@@ -1,4 +1,4 @@
-# dev(d)
+# devctl
 /vendor
 /logs/*
 !/logs/README.md
@@ -11,3 +11,5 @@
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+node_modules
