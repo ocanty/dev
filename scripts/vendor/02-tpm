@@ -1,0 +1,6 @@
+#!/bin/bash
+
+git clone https://github.com/tmux-plugins/tpm vendor/tmux/plugins/tpm
+
+. scripts/devenv/env.sh
+ vendor/tmux/plugins/tpm/bin/install_plugins
