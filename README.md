@@ -11,6 +11,12 @@ Once a project reaches a certain level of quality it will be graduated from this
 
 ## Intro
 
+### Setup instructions
+
+1. Clone the repo
+2. Run `./devenv vendor` then `./devenv code`
+3. Run `./devenv` within a VS Code terminal.
+
 ### Repo control with `devenv`
 
 `devenv` - Start/enter the development environment
