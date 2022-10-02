@@ -9,6 +9,7 @@ Once a project reaches a certain level of quality it will be graduated from this
 
 It provides virtual environments for Python, Go & Node.js. All 
 external dependencies and rc / profile files stay within the repository, the host system shouldn't be effected.
+I don't even have Node or Go installed on my machine outside of this repo :)
 
 ![screenshot](./docs/README/screenshot.png)
 
