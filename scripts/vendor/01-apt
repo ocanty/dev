@@ -1,4 +1,4 @@
 #!/bin/bash
 
-apt update
-apt install -y parallel jq inotify-tools
+sudo apt update
+sudo apt install -y parallel jq inotify-tools
