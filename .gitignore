@@ -17,3 +17,12 @@ dist/
 !.yarn/versions
 
 node_modules
+
+# gluegen
+glued/ts
+glueddb/sql
+glueddb/pg
+gluedfiles/ts
+gluedrpcserver/ts
+gluedrpcclient/ts
+
