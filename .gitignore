@@ -19,10 +19,10 @@ dist/
 node_modules
 
 # gluegen
-glued/ts
-glueddb/sql
-glueddb/pg
-gluedfiles/ts
-gluedrpcserver/ts
-gluedrpcclient/ts
+dev/glued/ts
+dev/glueddb/sql
+dev/glueddb/pg
+dev/gluedfiles/ts
+dev/gluedrpcserver/ts
+dev/gluedrpcclient/ts
 
