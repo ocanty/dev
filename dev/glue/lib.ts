@@ -943,14 +943,12 @@ class TargetTS implements Target {
             c.em.line(`access: 0o${'0' + (stat.mode & parseInt('777', 8)).toString(8)},`)
             c.em.line(`data: new Int8Array([`)
             
-            await eachChunk(filePath, (b: Buffer) => {
-
-                for (let i = 0; i < b.length; i++) {
-                    //console.log(typeof b[i])
-                    
+            await eachChunk(filePath, (b) => {
+                for (let i = 0; i < b.length; i++) {     
                     c.em.chars(`${b[i]},`)
                 }
             })
+            c.em.line()
 
             c.em.line(`])`)
             c.em.dedent()
