@@ -44,13 +44,18 @@ start_code() {
             | xargs -i -- sh -c "code --install-extension {} || true"    \
             | awk '!/is already installed/ && !/Installing extensions/'  \
 
-        code $DEV_ROOT
+        code $DEV_ROOT/dev.code-workspace
     else
         echo "[devenv] vscode is already open"
         exit 0
     fi 
 }
 
+start_new_term() {
+    window=$(date +%s)
+    $TMUX new-window -n $window
+    $TMUX attach-session -t $SESSION
+}
 
 window() {
     $TMUX choose-tree -s $SESSION
@@ -72,7 +77,7 @@ stop() {
 
 vendor() {
     cd $DEV_ROOT && run-parts scripts/vendor
-    commit_vendored
+    # commit_vendored
 }
 
 commit_vendored() {
@@ -92,7 +97,9 @@ node_modules() {
 }
 
 if [ $# -eq 0 ]; then
-    start
+    [ ! -d "vendor" ] && vendor
+
+    start_code
     return
 fi
 
@@ -103,14 +110,6 @@ do
             start
             ;;
 
-        devctl)
-            start_devctl
-            ;;
-
-        code)
-            start_code
-            ;;
-
         stop)
             stop
             ;;
@@ -119,16 +118,12 @@ do
             vendor
             ;;
 
-        window)
-            window
+        list)
+            list
             ;;
 
         node_modules)
             node_modules
-            ;;
-
-        *)
-            start
             ;;
     esac
     shift

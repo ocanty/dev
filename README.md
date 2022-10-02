@@ -7,21 +7,22 @@ Once a project reaches a certain level of quality it will be graduated from this
 
 `dev` exists because I got sick of managing containers/tooling/formatting/linting/service runners across repositories.
 
-**Linux x86-64 only!**
+It provides virtual environments for Python, Go & Node.js. All 
+external dependencies and rc / profile files stay within the repository, the host system shouldn't be effected.
 
-## Intro
+![screenshot](./docs/README/screenshot.png)
+
+**Linux x86-64 only!**
 
 ### Setup instructions
 
-1. Clone the repo
-2. Run `./devenv vendor` then `./devenv code`
-3. Run `./devenv` within a VS Code terminal.
+Clone the repository and run `./devenv`
 
 ### Repo control with `devenv`
 
-`devenv` - Start/enter the development environment
+`devenv code` - Open VSCode
 
-`devenv code` - Open Visual Studio Code (also installs recommended extensions)
+`devenv start` - Start/enter the development environment (outside of VSCode).
 
 `devenv vendor` - Revendor all dependencies.
 
