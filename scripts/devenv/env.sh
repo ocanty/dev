@@ -2,6 +2,7 @@
 
 export XDG_CONFIG_HOME="$DEV_ROOT/.config"
 export NVM_DIR="$DEV_ROOT/vendor/nvm"
+export PATH="$DEV_ROOT:$PATH"
 export PATH="$DEV_ROOT/vendor/bin:$PATH"
 export PATH="$DEV_ROOT/vendor/go/bin:$PATH"
 export PATH="$DEV_ROOT/vendor/tmux:$PATH"
