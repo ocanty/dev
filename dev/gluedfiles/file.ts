@@ -1,4 +1,3 @@
-
 export interface FileMeta {
     sha256: string
     access: number
