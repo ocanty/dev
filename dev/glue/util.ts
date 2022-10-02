@@ -14,8 +14,7 @@ export async function hashFile(hashKind: "sha256", path: string) {
 
 export async function eachChunk(path: string, onChunk: (b: Buffer) => void) {
   return new Promise((resolve, reject) => {
-    const stream = fs.createReadStream(path);
-    stream.setEncoding("binary")
+    const stream = fs.createReadStream(path, { encoding: null });
     stream.on('error', err => reject(err));
     stream.on('data', chunk => onChunk(chunk as Buffer));
     stream.on('end', () => resolve(undefined));

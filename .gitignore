@@ -3,6 +3,10 @@
 /logs/*
 !/logs/README.md
 
+node_modules
+dist/
+
+
 # yarn
 .pnp.*
 .yarn/*
