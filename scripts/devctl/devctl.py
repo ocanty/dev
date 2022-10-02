@@ -7,7 +7,7 @@ import shlex
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import libtmux
 import yaml
@@ -30,8 +30,7 @@ def main():
 
 class Command(BaseModel):
     """command"""
-    workdir: str
-    cmd: str
+    cmd: Dict[str, str]
 
 
 class Container(BaseModel):
@@ -121,13 +120,13 @@ class DevCtl:
             "start-groups": self.command_start_groups,
             "stop-groups": self.command_stop_groups,
             "start": self.command_start_projects,
-            "stop": self.command_stop_projects,
+            "stop": self.command_stop_projects, 
             "monitor": self.command_monitor,
             "tailor": self._restart_tailor,
-            "cmd": self.command_cmd,
+            # "cmd": self.command_cmd,
 
             # internal
-            "notify-project-status": self.command_notify_project_status
+            "project-cmd-status": self.command_project_cmd_status
         }
 
         cmd = args.pop()
@@ -185,36 +184,44 @@ class DevCtl:
         while True:
             time.sleep(5)
 
-    def command_cmd(self, args: List[str]):
-        """run command"""
+    # def command_cmd(self, args: List[str]):
+    #     """run command"""
 
-        if len(args) == 0:
-            raise Exception("needs a command")
+    #     if len(args) == 0:
+    #         raise Exception("needs a command")
 
-        name = args.pop()
-        args.reverse()
-        self._cmd_window(name, " ".join(args))
+    #     name = args.pop()
+    #     args.reverse()
+    #     self._cmd_window(name, " ".join(args))
 
-    def command_notify_project_status(self, args: List[str]):
+    def command_project_cmd_status(self, args: List[str]):
         """notify project status"""
-        if len(args) != 2:
+        if len(args) != 3:
             raise Exception("wrong status")
 
         project = args.pop()
+        cmd_id = args.pop()
         status = args.pop()
 
         if project not in self.config.projects:
             raise Exception(
-                f"tried to notify project status for unknown project {project}, is it in the log file?")
+                f"tried to notify project cmd status for unknown project {project}, is it in the log file?")
 
-        win = self._window_exists(self._project_window_name(project))
+        res = self._project_window(project)
+        if not res:
+            raise Exception(
+                f"tried to otify project cmd status for a project {project} that is not running!"
+            )
+
+        win, old_status = res
         win.rename_window(self._project_window_name(project, status))
 
-        if status == "failed":
-            self._log(f"{project} failed, restarting in 10 seconds...")
-            time.sleep(10)
-            self._start_projects([project], True)
+        if status == "failing":
+            self._log(f"{project} command {cmd_id} failing, restarting in 10 seconds...")
+            # time.sleep(10)
+            # self._start_projects([project], True)
         elif status == "success":
+            self._log(f"{project} command {cmd_id} exited successfully")
             input(f"[devctl] {project} exited successfully.")
         # ignore "running" for now.
         else:
@@ -238,68 +245,34 @@ class DevCtl:
         return self.logs.joinpath(proj_id)
 
     def _window_exists(self, name: str) -> Optional[libtmux.Window]:
-        for win in self.session.list_windows():
-            if win.name == name:
-                return win
+        return self.session.find_where({"window_name": name})
 
-        return None
+    def _escape_command(self, cmd: str) -> str:
+        return f"{self.root}/scripts/devenv/shell.sh -c {shlex.quote(cmd + ';')}"
 
-    def _cmd_window(self, name: str, cmd: str, rerun_if_exists: bool = True):
+    def _cmd_window(self, name: str, cmds: List[str], rerun_if_exists: bool = True):
         if self._window_exists(name):
             if rerun_if_exists:
-                self._log("Command already running, killing")
+                self._log("Commands already running, killing")
                 self.session.kill_window(name)
             else:
                 return
 
-        command = f"{self.root}/scripts/devenv/shell.sh -c {shlex.quote(cmd + ';')}"
-        # self._log("new cmd window: " + command)
-
-        self.session.new_window(
+        w = self.session.new_window(
             name,
             str(self.root),
             False,
             "",  # str(self._free_window_index(name)),
-            command
+            self._escape_command(cmds[0])
         )
+        w.select_layout("even-vertical")
 
-    # def _free_window_index(self, name: str, index_base: int = 100):
-    #     """Finds a loose"""
-    #     window_set = set(map(lambda w: w.index,
-    #                      self.session.list_windows()))
-
-        # # int_max = 2147483647
-        # order_letters = 6
-        # base = 26
-        # prefixes_required = index_base + base**order_letters  # 26 letters in alphabet
-        # ceil_pow2_prefixes = ceil_pow2(prefixes_required)
-
-        # prefix_bits = int(math.log(ceil_pow2_prefixes, 2))
-        # print(prefix_bits, ceil_pow2_prefixes)
-
-        # prefix_num = 0
-        # prefix = name[:order_letters][::-1]
-        # print("prefix:", prefix)
-        # for cha in prefix:
-        #     prefix_num *= base
-        #     prefix_num += ord(cha.lower()) - (ord('a')-1)
-
-        #     print(cha, prefix_num)
-
-        # prefix_num <<= (32-prefix_bits)
-
-        # print("prefix num", prefix_num)
-        # new_id = index_base + prefix_num + \
-        #     (hash_str_deterministic(
-        #         name[:order_letters], 0, (2**(31-prefix_bits))) if len(name) >= order_letters else 0)
-
-        # print(window_set, new_id)
-        # i =
-        # while str(new_id) in window_set:
-        #     new_id += 1
-
-        # print(new_id)
-        # return new_id
+        p = w.panes[0]
+        if len(cmds) > 1:
+            for i in range(1, len(cmds)):
+                p = w.split_window(shell=self._escape_command(cmds[i]))
+                w.select_layout("even-vertical")
+        # w.split_window()
 
     def _start_projects(self, projects: Optional[List[str]] = None, restart: bool = False):
         if len(projects) == 0:
@@ -309,6 +282,14 @@ class DevCtl:
             for sid in projects:
                 self._start_project(sid, restart)
 
+    def _proj_hook_cmd(
+        self,
+        project: str,
+        cmd: str,
+        cmd_id: str
+    ) -> str:
+        return f"""printf '\033]2;%s\033\\' '{project}-{cmd_id}'; while true; do (({cmd}) && ($DEV_ROOT/devctl project-cmd-status {project} {cmd_id} success; break) || ($DEV_ROOT/devctl project-cmd-status {project} {cmd_id} failing; sleep 10)); done"""
+
     def _start_project(self, project: str, restart: bool = False):
         self._log(f"starting project: {project}")
         if project not in self.config.projects:
@@ -316,13 +297,24 @@ class DevCtl:
 
         config = self.config.projects[project]
 
+        has_win = self._project_window(project)
+        if has_win:
+            if restart:
+                self._log(f"{project} is already running, restarting...")
+                self._stop_project(project)
+            else:
+                self._log(f"{project} is already running")
+                return
+
         if config.command is not None:
             command = config.command
 
+            hooked_cmds = []
+            for cmd_id, cmd in command.cmd.items():
+                hooked_cmds.append(self._proj_hook_cmd(project, cmd, cmd_id))
+
             self._cmd_window(
-                self._project_window_name(project),
-                f"cd {command.workdir} && ((({command.cmd}) && $DEV_ROOT/devctl notify-project-status {project} success) || $DEV_ROOT/devctl notify-project-status {project} failed;)",
-                restart
+                self._project_window_name(project), hooked_cmds, restart
             )
 
         elif config.container is not None:
@@ -339,32 +331,34 @@ class DevCtl:
 
     def _stop_project(self, project: str):
         self._log(f"stopping project: {project}")
-        # if project not in self.config.projects:
-        #     raise Exception(f"no such project {project}")
-        killed = False
-        for window_name in map(lambda status: self._project_window_name(project, status), ["success", "failed", "running"]):
-            win = self._window_exists(window_name)
 
-            if win:
-                win.kill_window()
-                killed = True
-
-        if not killed:
+        res = self._project_window(project)
+        if res:
+            w, status = res
+            w.kill_window()
+        else:
             self._log(f"project {project} is not running")
 
     def _project_window_name(self, project: str, status: str = "running"):
         if status == "running":
-            return f"proj-{project}"
-        elif status == "success":
-            return f"proj-success-{project}"
-        elif status == "failed":
-            return f"proj-failed-{project}"
+            return f"p-running-{project}"
+        elif status == "finished":
+            return f"p-finished-{project}"
+        elif status == "failing":
+            return f"p-failing-{project}"
+
+    def _project_window(self, project: str) -> Optional[Tuple[libtmux.Window, str]]:
+        for status in ["running", "success", "failing"]:
+            w = self._window_exists(self._project_window_name(project, status))
+
+            if w:
+                return (w, status)
 
     def _restart_tailor(self):
         self._log("(re)starting logs")
         self._cmd_window(
             "devctl-logs",
-            "scripts/devctl/tailor.sh"
+            ["scripts/devctl/tailor.sh"]
         )
 
     def _startup_tasks(self):

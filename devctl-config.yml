@@ -4,49 +4,40 @@ startup:
 projects:
   glue:
     command:
-      workdir: dev/glue
-      cmd: yarn install && yarn run dev
-  glued:
-    command:
-      workdir: dev/glued
-      cmd: yarn install && yarn run dev
+      cmd:
+        compiler: cd dev/glue && yarn install && yarn run dev
+        definitions: cd dev/glued && yarn install && yarn run dev
+        rpcclient: cd dev/gluedrpcclient && yarn install && yarn run dev
+        rpcserver: cd dev/gluedrpcserver && yarn install && yarn run dev
+        files: cd dev/gluedfiles && yarn install && yarn run dev
   glueddb:
     command:
-      workdir: dev/glueddb
-      cmd: yarn install && yarn run dev
-  glueddbpostgres:
-    command:
-      workdir: dev/glueddb
-      cmd: docker-compose rm -f && docker-compose up
-  gluedfiles:
-    command:
-      workdir: dev/gluedfiles
-      cmd: yarn install && yarn run dev
-  gluedrpcclient:
-    command:
-      workdir: dev/gluedrpcclient
-      cmd: yarn run dev
-  gluedrpcserver:
-    command:
-      workdir: dev/gluedrpcserver
-      cmd: yarn install && yarn run dev
+      cmd:
+        server: cd dev/glueddb && yarn install && yarn run dev
+        postgres: cd dev/glueddb && docker-compose rm -f && docker-compose up
   gluedui:
     command:
       workdir: dev/gluedui
-      cmd: yarn install && yarn run start
+      cmd:
+        server: cd dev/gluedui && yarn install && yarn run start
   sbox:
-    commandi:
+    command:
       workdir: dev/sbox
-      cmd: yarn install && yarn run dev
+      cmd:
+        main: cd dev/sbox &&  yarn install && yarn run dev
+
+  # These are sacrificial bootstrap nodes
+  keystoneconsul:
+    command:
+      cmd:
+        1: "cd dev/keystone/consul && ../../glue/files/hostd/consul agent -server -data-dir ./data/consul1 -bind 127.128.32.2 -bootstrap-expect 3"
+        2: "cd dev/keystone/consul && ../../glue/files/hostd/consul agent -data-dir ./data/consul2 -bind 127.128.32.3 -retry-join 10.127.32.2"
+        3: "cd dev/keystone/consul && ../../glue/files/hostd/consul agent -data-dir ./data/consul3 -bind 127.128.32.4 -retry-join 10.127.32.2"
 groups:
   default:
     projects:
       - glue
-      - glued
-      - gluedrpcserver
-      - gluedrpcclient
       - glueddb
-      - glueddbpostgres
-      - gluedfiles
       - gluedui
-      - sbox
+      - keystoneconsul
+      # - sbox

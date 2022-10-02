@@ -49,3 +49,29 @@ Configure it in `devctl-config.yml`.
 
 This is a rolling TODO list for this repository.
 
+## Overview
+
+<!-- ### Netcop
+
+
+#### System Hostnames
+
+##### Service hostname format:
+
+`<hostname>.<servicename>.service.<cluster>` .ptcc -->
+
+<!-- 
+
+`<boxtype>-<boxname>-<cluster>`
+`<boxname>-<boxtype>-<cluster>`
+
+`catch-absense-staple-prod-eu1`
+
+`[<tag>.]<service>.service[.<datacenter>].<domain>` -->
+
+<!-- # Lookup a 
+`catch-absense-staple.hostd.service.eu1-PROD`
+
+
+`new1box1.hostd.prod1`
+`hostd.prod1` -->
