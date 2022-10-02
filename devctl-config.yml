@@ -5,15 +5,15 @@ services:
   glue:
     command:
       workdir: dev/glue
-      cmd: yarn run dev
+      cmd: yarn install && yarn run dev
   glued:
     command:
       workdir: dev/glued
-      cmd: yarn run dev
+      cmd: yarn install && yarn run dev
   glueddb:
     command:
       workdir: dev/glueddb
-      cmd: yarn run dev
+      cmd: yarn install && yarn run dev
   glueddbpostgres:
     command:
       workdir: dev/glueddb
@@ -25,15 +25,15 @@ services:
   gluedrpcserver:
     command:
       workdir: dev/gluedrpcserver
-      cmd: yarn run dev
+      cmd: yarn install && yarn run dev
   gluedui:
     command:
       workdir: dev/gluedui
-      cmd: yarn run start
+      cmd: yarn install && yarn run start
   sbox:
     commandi:
       workdir: dev/sbox
-      cmd: yarn run dev
+      cmd: yarn install && yarn run dev
 groups:
   default:
     services:
