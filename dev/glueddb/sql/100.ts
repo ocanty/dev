@@ -1,7 +1,0 @@
-/* eslint-disable */
-/* This file has been automatically generated */
---global['_blahblah']; export default`
-CREATE TABLE IF NOT EXISTS GLUE_100_0 ();
-ALTER TABLE GLUE_100_0 ADD COLUMN 0 TEXT DEFAULT('') NOT NULL ;
-ALTER TABLE GLUE_100_0 ADD COLUMN 1 TEXT DEFAULT('') NOT NULL ;
---`
