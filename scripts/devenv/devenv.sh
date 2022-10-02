@@ -46,7 +46,8 @@ start_code() {
 
         code $DEV_ROOT/dev.code-workspace
     else
-        echo "[devenv] vscode is already open"
+        echo "[devenv] vscode is already open, starting devenv anyway"
+        start
         exit 0
     fi 
 }

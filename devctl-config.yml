@@ -1,7 +1,7 @@
 startup:
   groups:
     - default
-services:
+projects:
   glue:
     command:
       workdir: dev/glue
@@ -18,6 +18,10 @@ services:
     command:
       workdir: dev/glueddb
       cmd: docker-compose rm -f && docker-compose up
+  gluedfiles:
+    command:
+      workdir: dev/gluedfiles
+      cmd: yarn install && yarn run dev
   gluedrpcclient:
     command:
       workdir: dev/gluedrpcclient
@@ -36,12 +40,13 @@ services:
       cmd: yarn install && yarn run dev
 groups:
   default:
-    services:
+    projects:
       - glue
       - glued
       - gluedrpcserver
       - gluedrpcclient
       - glueddb
       - glueddbpostgres
+      - gluedfiles
       - gluedui
       - sbox

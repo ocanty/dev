@@ -38,15 +38,15 @@ class Container(BaseModel):
     """container"""
 
 
-class Service(BaseModel):
-    """service definition"""
+class project(BaseModel):
+    """project definition"""
     command: Optional[Command]
     container: Optional[Container]
 
 
 class Scope(BaseModel):
-    """Project with services"""
-    services: List[str]
+    """Project with projects"""
+    projects: List[str]
 
 
 class Startup(BaseModel):
@@ -55,7 +55,7 @@ class Startup(BaseModel):
 
 class DevCtlConfig(BaseModel):
     """devctl config"""
-    services: Dict[str, Service]
+    projects: Dict[str, project]
     groups: Dict[str, Scope]
     startup: Startup
 
@@ -120,14 +120,14 @@ class DevCtl:
         cmds = {
             "start-groups": self.command_start_groups,
             "stop-groups": self.command_stop_groups,
-            "start": self.command_start_services,
-            "stop": self.command_stop_services,
+            "start": self.command_start_projects,
+            "stop": self.command_stop_projects,
             "monitor": self.command_monitor,
             "tailor": self._restart_tailor,
             "cmd": self.command_cmd,
 
             # internal
-            "notify-service-status": self.command_notify_service_status
+            "notify-project-status": self.command_notify_project_status
         }
 
         cmd = args.pop()
@@ -144,8 +144,8 @@ class DevCtl:
 
             if scope in self.config.groups:
                 self._log(f"starting scope: {scope}")
-                services = self.config.groups[scope].services
-                self._start_services(services)
+                projects = self.config.groups[scope].projects
+                self._start_projects(projects)
             else:
                 self._log(f"no such scope: {scope}")
 
@@ -156,22 +156,22 @@ class DevCtl:
 
             if scope in self.config.groups:
                 self._log(f"stopping scope: {scope}")
-                services = self.config.groups[scope].services
-                self._stop_services(services)
+                projects = self.config.groups[scope].projects
+                self._stop_projects(projects)
             else:
                 self._log(f"no such scope: {scope}")
 
-    def command_start_services(self, args: List[str]):
-        """starts services"""
+    def command_start_projects(self, args: List[str]):
+        """starts projects"""
 
-        self._log(f"starting services: {' '.join(args)}")
+        self._log(f"starting projects: {' '.join(args)}")
 
-        self._start_services(args)
+        self._start_projects(args)
 
-    def command_stop_services(self, args: List[str]):
-        """stops services"""
-        self._log(f"stopping services: {' '.join(args)}")
-        self._stop_services(args)
+    def command_stop_projects(self, args: List[str]):
+        """stops projects"""
+        self._log(f"stopping projects: {' '.join(args)}")
+        self._stop_projects(args)
 
     def command_monitor(self, args: List[str]):
         """runs daemon"""
@@ -195,47 +195,47 @@ class DevCtl:
         args.reverse()
         self._cmd_window(name, " ".join(args))
 
-    def command_notify_service_status(self, args: List[str]):
-        """notify service status"""
+    def command_notify_project_status(self, args: List[str]):
+        """notify project status"""
         if len(args) != 2:
             raise Exception("wrong status")
 
-        service = args.pop()
+        project = args.pop()
         status = args.pop()
 
-        if service not in self.config.services:
+        if project not in self.config.projects:
             raise Exception(
-                f"tried to notify service status for unknown service {service}, is it in the log file?")
+                f"tried to notify project status for unknown project {project}, is it in the log file?")
 
-        win = self._window_exists(self._service_window_name(service))
-        win.rename_window(self._service_window_name(service, status))
+        win = self._window_exists(self._project_window_name(project))
+        win.rename_window(self._project_window_name(project, status))
 
         if status == "failed":
-            self._log(f"{service} failed, restarting in 10 seconds...")
+            self._log(f"{project} failed, restarting in 10 seconds...")
             time.sleep(10)
-            self._start_services([service], True)
+            self._start_projects([project], True)
         elif status == "success":
-            input(f"[devctl] {service} exited successfully.")
+            input(f"[devctl] {project} exited successfully.")
         # ignore "running" for now.
         else:
             raise Exception(
-                f"tried to notify unknown service status {status} for service {service}")
+                f"tried to notify unknown project status {status} for project {project}")
 
     #############################################
 
     def _setup_logfiles(self):
-        for svc_id in self.config.services:
-            self._service_logfile(svc_id).touch()
+        for proj_id in self.config.projects:
+            self._project_logfile(proj_id).touch()
 
-        self._service_logfile("devctl").touch()
+        self._project_logfile("devctl").touch()
 
     def _log(self, msg):
         print(f"[devctl] {msg}")
         with open(self.logs.joinpath("devctl"), "a", encoding='utf-8') as log:
             log.write(msg+"\n")
 
-    def _service_logfile(self, svc_id: str) -> Path:
-        return self.logs.joinpath(svc_id)
+    def _project_logfile(self, proj_id: str) -> Path:
+        return self.logs.joinpath(proj_id)
 
     def _window_exists(self, name: str) -> Optional[libtmux.Window]:
         for win in self.session.list_windows():
@@ -301,27 +301,27 @@ class DevCtl:
         # print(new_id)
         # return new_id
 
-    def _start_services(self, services: Optional[List[str]] = None, restart: bool = False):
-        if len(services) == 0:
-            for sid in self.config.services:
-                self._start_service(sid, restart)
-        elif services is not None:
-            for sid in services:
-                self._start_service(sid, restart)
+    def _start_projects(self, projects: Optional[List[str]] = None, restart: bool = False):
+        if len(projects) == 0:
+            for sid in self.config.projects:
+                self._start_project(sid, restart)
+        elif projects is not None:
+            for sid in projects:
+                self._start_project(sid, restart)
 
-    def _start_service(self, service: str, restart: bool = False):
-        self._log(f"starting service: {service}")
-        if service not in self.config.services:
-            raise Exception(f"no such service {service}")
+    def _start_project(self, project: str, restart: bool = False):
+        self._log(f"starting project: {project}")
+        if project not in self.config.projects:
+            raise Exception(f"no such project {project}")
 
-        config = self.config.services[service]
+        config = self.config.projects[project]
 
         if config.command is not None:
             command = config.command
 
             self._cmd_window(
-                self._service_window_name(service),
-                f"cd {command.workdir} && ((({command.cmd}) && $DEV_ROOT/devctl notify-service-status {service} success) || $DEV_ROOT/devctl notify-service-status {service} failed;)",
+                self._project_window_name(project),
+                f"cd {command.workdir} && ((({command.cmd}) && $DEV_ROOT/devctl notify-project-status {project} success) || $DEV_ROOT/devctl notify-project-status {project} failed;)",
                 restart
             )
 
@@ -329,20 +329,20 @@ class DevCtl:
             # TODO handle containers
             pass
 
-    def _stop_services(self, services: Optional[List[str]]):
-        if len(services) == 0:
-            for sid in self.config.services:
-                self._stop_service(sid)
-        elif services is not None:
-            for sid in services:
-                self._stop_service(sid)
+    def _stop_projects(self, projects: Optional[List[str]]):
+        if len(projects) == 0:
+            for sid in self.config.projects:
+                self._stop_project(sid)
+        elif projects is not None:
+            for sid in projects:
+                self._stop_project(sid)
 
-    def _stop_service(self, service: str):
-        self._log(f"stopping service: {service}")
-        # if service not in self.config.services:
-        #     raise Exception(f"no such service {service}")
+    def _stop_project(self, project: str):
+        self._log(f"stopping project: {project}")
+        # if project not in self.config.projects:
+        #     raise Exception(f"no such project {project}")
         killed = False
-        for window_name in map(lambda status: self._service_window_name(service, status), ["success", "failed", "running"]):
+        for window_name in map(lambda status: self._project_window_name(project, status), ["success", "failed", "running"]):
             win = self._window_exists(window_name)
 
             if win:
@@ -350,15 +350,15 @@ class DevCtl:
                 killed = True
 
         if not killed:
-            self._log(f"service {service} is not running")
+            self._log(f"project {project} is not running")
 
-    def _service_window_name(self, service: str, status: str = "running"):
+    def _project_window_name(self, project: str, status: str = "running"):
         if status == "running":
-            return f"svc-{service}"
+            return f"proj-{project}"
         elif status == "success":
-            return f"svc-success-{service}"
+            return f"proj-success-{project}"
         elif status == "failed":
-            return f"svc-failed-{service}"
+            return f"proj-failed-{project}"
 
     def _restart_tailor(self):
         self._log("(re)starting logs")
