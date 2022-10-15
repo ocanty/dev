@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# . "$DEV_ROOT/vendor/rvm/scripts/rvm"
+
+rm -rf vendor/vagrant
+mkdir vendor/vagrant
+# git clone -b main https://github.com/hashicorp/vagrant.git vendor/vagrant
+# cd vendor/vagrant && bundle install && bundle --binstubs exec
+# gem install net-ssh 7.0.0.beta1
+sudo apt install -y vagrant
+# sudo gem install bundler -v '~> 2.3'

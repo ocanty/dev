@@ -76,6 +76,10 @@ stop() {
     fi
 }
 
+vms() {
+    virtualbox
+}
+
 vendor() {
     cd $DEV_ROOT && run-parts scripts/vendor
     # commit_vendored
@@ -125,6 +129,10 @@ do
 
         node_modules)
             node_modules
+            ;;
+
+        vms)
+            vms
             ;;
     esac
     shift

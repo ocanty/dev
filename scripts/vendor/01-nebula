@@ -1,0 +1,10 @@
+#!/bin/bash
+
+rm -rf vendor/nebula
+mkdir vendor/nebula
+wget https://github.com/slackhq/nebula/releases/download/v1.6.1/nebula-linux-amd64.tar.gz -O vendor/nebula/nebula.tar.gz
+cd vendor/nebula
+tar -xsvf nebula.tar.gz
+chmod +x nebula
+chmod +x nebula-cert
+rm nebula.tar.gz

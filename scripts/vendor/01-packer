@@ -1,0 +1,8 @@
+#!/bin/bash
+
+rm -rf vendor/packer
+mkdir vendor/packer
+wget https://releases.hashicorp.com/packer/1.8.3/packer_1.8.3_linux_amd64.zip -O vendor/packer/packer.zip
+unzip vendor/packer/packer.zip -d vendor/packer
+chmod +x vendor/packer
+rm vendor/packer/packer.zip

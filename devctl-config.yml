@@ -30,9 +30,9 @@ projects:
   keystoneconsul:
     command:
       cmd:
-        1: "cd dev/keystone/consul && ../../glue/files/hostd/consul agent -server -data-dir ./data/consul1 -bind 127.128.32.2 -bootstrap-expect 3"
-        2: "cd dev/keystone/consul && ../../glue/files/hostd/consul agent -data-dir ./data/consul2 -bind 127.128.32.3 -retry-join 10.127.32.2"
-        3: "cd dev/keystone/consul && ../../glue/files/hostd/consul agent -data-dir ./data/consul3 -bind 127.128.32.4 -retry-join 10.127.32.2"
+        1: cd dev/keystone/consul && ../../glue/files/hostd/consul agent -node keystone1 -server -data-dir ./data/consul1 -client 127.255.0.1 -bind 127.255.0.1 -bootstrap-expect 3
+        2: cd dev/keystone/consul && ../../glue/files/hostd/consul agent -node keystone2 -server -data-dir ./data/consul2 -client 127.255.0.2 -bind 127.255.0.2 -retry-join 10.255.0.1
+        3: cd dev/keystone/consul && ../../glue/files/hostd/consul agent -node keystone3 -server -data-dir ./data/consul3 -client 127.255.0.3 -bind 127.255.0.3 -retry-join 10.255.0.1
 groups:
   default:
     projects:

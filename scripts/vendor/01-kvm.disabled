@@ -1,0 +1,20 @@
+sudo apt-get -y install qemu-kvm libvirt-dev virtinst virt-viewer libguestfs-tools virt-manager uuid-runtime curl linux-source libosinfo-bin
+
+sudo groupadd --system libvirt
+sudo usermod -a -G libvirt $(whoami)
+newgrp libvirt
+sudo chmod 0770 nlibvirt-sock
+
+virsh net-start default
+virsh net-autostart default
+systemctl restart libvirt
+
+sudo bash -c "virsh net-list | grep 'dev-' | cut -d' ' -f2 | xargs virsh net-destroy"
+
+sudo virsh net-define --file scripts/libvirt/dev-vagrantbr0.xml
+sudo virsh net-start dev-vagrantbr0
+sudo virsh net-autostart dev-vagrantbr0
+
+sudo virsh net-define --file scripts/libvirt/dev-packerbr0.xml
+sudo virsh net-start dev-packerbr0
+sudo virsh net-autostart dev-packerbr0

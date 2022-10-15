@@ -6,6 +6,7 @@ import random
 import shlex
 import sys
 import time
+from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -28,6 +29,11 @@ def main():
     DevCtl(Path(os.getenv("DEV_ROOT"))).command(args)
 
 
+class Status(str, Enum):
+    Success = "✓"
+    Running ="🗘"
+    Failed ="✗"
+
 class Command(BaseModel):
     """command"""
     cmd: Dict[str, str]
@@ -37,7 +43,7 @@ class Container(BaseModel):
     """container"""
 
 
-class project(BaseModel):
+class Project(BaseModel):
     """project definition"""
     command: Optional[Command]
     container: Optional[Container]
@@ -54,7 +60,7 @@ class Startup(BaseModel):
 
 class DevCtlConfig(BaseModel):
     """devctl config"""
-    projects: Dict[str, project]
+    projects: Dict[str, Project]
     groups: Dict[str, Scope]
     startup: Startup
 
@@ -121,6 +127,7 @@ class DevCtl:
             "stop-groups": self.command_stop_groups,
             "start": self.command_start_projects,
             "stop": self.command_stop_projects, 
+            "restart": self.command_restart_projects, 
             "monitor": self.command_monitor,
             "tailor": self._restart_tailor,
             # "cmd": self.command_cmd,
@@ -172,6 +179,9 @@ class DevCtl:
         self._log(f"stopping projects: {' '.join(args)}")
         self._stop_projects(args)
 
+    def command_restart_projects(self, args: List[str]):
+        self._restart_projects(args)
+
     def command_monitor(self, args: List[str]):
         """runs daemon"""
         self._log("monitor started")
@@ -210,20 +220,25 @@ class DevCtl:
         res = self._project_window(project)
         if not res:
             raise Exception(
-                f"tried to otify project cmd status for a project {project} that is not running!"
+                f"tried to notify project cmd status for a project {project} that is not running!"
             )
 
         win, old_status = res
         win.rename_window(self._project_window_name(project, status))
 
-        if status == "failing":
+        if status == Status.Failed:
             self._log(f"{project} command {cmd_id} failing, restarting in 10 seconds...")
             # time.sleep(10)
             # self._start_projects([project], True)
-        elif status == "success":
+        elif status == Status.Success:
             self._log(f"{project} command {cmd_id} exited successfully")
-            input(f"[devctl] {project} exited successfully.")
-        # ignore "running" for now.
+            s = input(f"[devctl] {project} exited successfully. Rerun? [y/N]: ").lower()
+            if s == "y" and win != None:
+                win.attached_pane.send_keys("Enter")
+            else:
+                return
+
+        # ignore Status.Running for now.
         else:
             raise Exception(
                 f"tried to notify unknown project status {status} for project {project}")
@@ -251,10 +266,12 @@ class DevCtl:
         return f"{self.root}/scripts/devenv/shell.sh -c {shlex.quote(cmd + ';')}"
 
     def _cmd_window(self, name: str, cmds: List[str], rerun_if_exists: bool = True):
-        if self._window_exists(name):
+        w = self._window_exists(name)
+
+        if w:
             if rerun_if_exists:
                 self._log("Commands already running, killing")
-                self.session.kill_window(name)
+                self._kill_window(w)
             else:
                 return
 
@@ -288,7 +305,20 @@ class DevCtl:
         cmd: str,
         cmd_id: str
     ) -> str:
-        return f"""printf '\033]2;%s\033\\' '{project}-{cmd_id}'; while true; do (({cmd}) && ($DEV_ROOT/devctl project-cmd-status {project} {cmd_id} success; break) || ($DEV_ROOT/devctl project-cmd-status {project} {cmd_id} failing; sleep 10)); done"""
+        return f"""printf '\033]2;%s\033\\' '{project}-{cmd_id}';
+while true; do
+    $DEV_ROOT/devctl project-cmd-status {project} {cmd_id} {Status.Running};
+    if ({cmd}); then
+        $DEV_ROOT/devctl project-cmd-status {project} {cmd_id} {Status.Success};
+        break;
+    else
+        $DEV_ROOT/devctl project-cmd-status {project} {cmd_id} {Status.Failed};
+        sleep 10;
+    fi
+done;
+
+exit 0;
+"""
 
     def _start_project(self, project: str, restart: bool = False):
         self._log(f"starting project: {project}")
@@ -328,6 +358,21 @@ class DevCtl:
         elif projects is not None:
             for sid in projects:
                 self._stop_project(sid)
+            
+    def _restart_projects(self, projects: Optional[List[str]]):
+        self._stop_projects(projects)
+        self._start_projects(projects)
+
+    def _kill_window(self, w: libtmux.Window):
+        n = w.get("window_name")
+        while True:
+            w = self.session.find_where({"window_name": n})
+
+            if w:
+                for p in w.panes:
+                    p.send_keys("C-c")
+            else:
+                break
 
     def _stop_project(self, project: str):
         self._log(f"stopping project: {project}")
@@ -335,24 +380,26 @@ class DevCtl:
         res = self._project_window(project)
         if res:
             w, status = res
-            w.kill_window()
+            self._kill_window(w)
         else:
             self._log(f"project {project} is not running")
 
-    def _project_window_name(self, project: str, status: str = "running"):
-        if status == "running":
-            return f"p-running-{project}"
-        elif status == "finished":
-            return f"p-finished-{project}"
-        elif status == "failing":
-            return f"p-failing-{project}"
+    def _project_window_name(self, project: str, status: str = Status.Running):
+        if status == Status.Running:
+            return f"{Status.Running}-{project}"
+        elif status == Status.Success:
+            return f"{Status.Success}-{project}"
+        elif status == Status.Failed:
+            return f"{Status.Failed}-{project}"
 
     def _project_window(self, project: str) -> Optional[Tuple[libtmux.Window, str]]:
-        for status in ["running", "success", "failing"]:
+        for status in [Status.Running, Status.Success, Status.Failed]:
             w = self._window_exists(self._project_window_name(project, status))
 
             if w:
                 return (w, status)
+
+        # print(f"couldn't find project {project} window {self._project_window_name(project, status)}")
 
     def _restart_tailor(self):
         self._log("(re)starting logs")

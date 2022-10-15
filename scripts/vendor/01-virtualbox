@@ -1,0 +1,5 @@
+#!/bin/bash
+
+sudo apt install -y linux-headers-`uname -r`
+sudo apt install -y --reinstall virtualbox-dkms virtualbox
+systemctl restart virtualbox

@@ -1,0 +1,12 @@
+<network>
+  <name>dev-packerbr0</name>
+  <uuid>9a05da11-e96b-47f3-8253-a3a482e445e4</uuid>
+  <forward mode='nat'/>
+  <bridge name='dev-packerbr0' stp='on' delay='0'/>
+  <mac address='52:54:00:0a:cd:20'/>
+  <ip address='10.72.0.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='10.72.0.2' end='10.72.0.254'/>
+    </dhcp>
+  </ip>
+</network>
