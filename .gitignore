@@ -26,3 +26,6 @@ dev/gluedfiles/ts
 dev/gluedrpcserver/ts
 dev/gluedrpcclient/ts
 
+# networking
+dev/networking/devproxiedbrowser
+!dev/networking/devproxiedbrowser/README.md
