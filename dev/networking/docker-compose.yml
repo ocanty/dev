@@ -1,0 +1,39 @@
+version: '3.6'
+services:
+  dns:
+    image: "internetsystemsconsortium/bind9:9.18"
+    restart: always
+    volumes:
+      - "./dns/named.conf:/etc/bind/named.conf"
+      - "./dns/dev.test.zone:/var/lib/bind/dev.test.zone"
+    networks:
+      devbr:
+        ipv4_address: 172.31.0.2
+  sockd:
+    image: "wernight/dante:latest"
+    restart: always
+    ports: 
+      - "127.0.0.1:1080:1080"
+    volumes:
+      - "./devproxy/sockd.conf:/etc/sockd.conf"
+      - "./devproxy/resolv.conf:/etc/resolv.conf"
+    networks:
+      devbr:
+        ipv4_address: 172.31.0.3
+  dhcpd:
+    image: "networkboot/dhcpd:1.3.0"
+    restart: always
+    volumes:
+      - "./dhcpd/dhcpd.conf:/data/dhcpd.conf"
+    network_mode: host
+    command: devbr
+networks:
+  devbr:
+    driver_opts:
+      com.docker.network.bridge.name: devbr
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.31.0.0/16"
+          gateway: 172.31.0.1
+      
