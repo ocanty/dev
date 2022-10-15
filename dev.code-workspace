@@ -13,7 +13,11 @@
 			"source.organizeImports": true,
 			"source.sortMembers": true
 		},
-		"task.allowAutomaticTasks": "on"
+		"task.allowAutomaticTasks": "on",
+		"workbench.colorCustomizations": {
+			"editorIndentGuide.background": "#222222",
+		},
+		"workbench.colorTheme": "Default High Contrast"
 	},
 	"tasks": {
 		"version": "2.0.0",
