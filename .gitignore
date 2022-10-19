@@ -6,7 +6,6 @@
 node_modules
 dist/
 
-
 # yarn
 .pnp.*
 .yarn/*
@@ -18,14 +17,13 @@ dist/
 
 node_modules
 
-# gluegen
-dev/glued/ts
-dev/glueddb/sql
-dev/glueddb/pg
-dev/gluedfiles/ts
-dev/gluedrpcserver/ts
-dev/gluedrpcclient/ts
+# codegen
+dev/*/**/_codegen.ts
 
 # networking
 dev/networking/devproxiedbrowser
 !dev/networking/devproxiedbrowser/README.md
+
+#
+.config/
+!.config/Code/User/keybindings.json
