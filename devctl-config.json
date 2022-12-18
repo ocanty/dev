@@ -1,0 +1,51 @@
+{
+  "startup": {
+    "groups": [
+      "default"
+    ]
+  },
+  "projects": {
+    "codegen": {
+      "command": {
+        "cmd": {
+          "build": "cd dev/codegen && yarn install && yarn run rollup",
+          "run": "cd dev/codegen && yarn install && yarn run watch $DEV_ROOT/dev"
+        }
+      }
+    }, 
+    "networking": {
+      "command": {
+        "cmd": {
+          "main": "cd dev/networking && docker-compose rm -f && docker-compose up",
+          "setup-mc": "mc alias set devs3 http://172.31.0.4:9000 root rootroot && mc mb --ignore-existing devs3/dev && mc anonymous set download devs3/dev"
+        }
+      }
+    },
+    "browser": {
+      "command": {
+        "cmd": {
+          "chromium": "cd dev/networking && chromium --proxy-server=socks://localhost:1080 --profile-directory=\"Person 1\" --user-data-dir=./devproxiedbrowser/profile/userdata"
+        }
+      }
+    },
+    "vmimages": {
+      "command": {
+        "cmd": {
+          "build": "cd dev/vmimages && ./build.sh"
+        }
+      }
+    }
+  },
+  "groups": {
+    "default": {
+      "projects": [
+        "codegen",
+        "networking",
+        "browser"
+      ]
+    }
+  },
+  "includes": [
+    "./dev/codegen-devctl-config.json"
+  ]
+}
