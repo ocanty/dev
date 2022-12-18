@@ -1,0 +1,10 @@
+#!/bin/bash
+
+rm -rf vendor/mc
+mkdir vendor/mc
+curl https://dl.min.io/client/mc/release/linux-amd64/mc -o vendor/mc/mc-binary
+chmod +x vendor/mc/mc-binary
+echo '#!/bin/bash
+mc-binary --config-dir $DEV_ROOT/.config/.mc $@
+' > vendor/mc/mc
+chmod +x vendor/mc/mc
